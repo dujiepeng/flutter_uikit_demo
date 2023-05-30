@@ -1,0 +1,6 @@
+framework module agora_chat_sdk {
+  umbrella header "agora_chat_sdk-umbrella.h"
+
+  export *
+  module * { export * }
+}
