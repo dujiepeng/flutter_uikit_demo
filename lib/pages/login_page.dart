@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_uikit_demo/tools/image_loader.dart';
 
+import '../widgets/input_text_widget.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -17,12 +19,13 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _showPwd = false;
   bool _canLogin = false;
+  String _errText = '';
+  bool _showErr = false;
   final TextEditingController _usernameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Center(
           child: ListView(
@@ -31,6 +34,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Image.asset(
                       ImageLoader.getImg("icon_log.png"),
@@ -43,62 +47,57 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 30,
                           fontWeight: FontWeight.w900),
                     ),
-                    const Divider(height: 64, color: Colors.transparent),
-                    TextField(
-                      cursorColor: Colors.blue,
+                    const Divider(height: 20, color: Colors.transparent),
+                    AnimatedOpacity(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeInCirc,
+                      opacity: _showErr ? 1 : 0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error,
+                            color: Color.fromRGBO(255, 20, 204, 1),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(_errText, style: const TextStyle(fontSize: 16))
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 10, color: Colors.transparent),
+                    InputTextWidget(
                       onChanged: (text) {
                         judgmentLoginBtnCallPress();
                       },
                       controller: _usernameController,
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color.fromRGBO(242, 242, 242, 1),
-                          contentPadding:
-                              const EdgeInsets.fromLTRB(30, 17, 30, 17),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                          ),
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                _usernameController.text = "";
-                                judgmentLoginBtnCallPress();
-                              },
-                              icon: const Icon(Icons.close_rounded,
-                                  color: Colors.grey)),
-                          hintText: "Username",
-                          hintStyle: const TextStyle(color: Colors.grey)),
-                      obscureText: false,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          _usernameController.text = "";
+                          judgmentLoginBtnCallPress();
+                        },
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      hideText: "Username",
                     ),
                     const Divider(height: 18, color: Colors.transparent),
-                    TextField(
-                      cursorColor: Colors.blue,
+                    InputTextWidget(
                       onChanged: (text) {
                         _password = text;
                         judgmentLoginBtnCallPress();
                       },
-                      decoration: InputDecoration(
-                          contentPadding:
-                              const EdgeInsets.fromLTRB(30, 17, 30, 17),
-                          filled: true,
-                          fillColor: const Color.fromRGBO(242, 242, 242, 1),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                          ),
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _showPwd = !_showPwd;
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.remove_red_eye_sharp,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          hintText: "Password",
-                          hintStyle: const TextStyle(color: Colors.grey)),
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(() => _showPwd = !_showPwd),
+                        icon: const Icon(
+                          Icons.remove_red_eye_sharp,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      hideText: 'Password',
                       obscureText: !_showPwd,
                     ),
                     const Divider(height: 18, color: Colors.transparent),
@@ -133,9 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                         TextSpan(
                             text: "Register",
                             recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                debugPrint("tap");
-                              },
+                              ..onTap = registerAction,
                             style: const TextStyle(
                                 fontSize: 16,
                                 color: Color.fromRGBO(17, 78, 255, 1),
@@ -177,8 +174,20 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pushReplacementNamed("home");
     }).catchError((error) {
       EasyLoading.dismiss();
-      String desc = (error as ChatError).description;
-      EasyLoading.showError(desc);
+      _errText = (error as ChatError).description;
+      setState(() {
+        _showErr = true;
+      });
+      Future.delayed(const Duration(milliseconds: 2000), () {
+        setState(() {
+          _showErr = false;
+        });
+      });
     });
+  }
+
+  void registerAction() {
+    debugPrint('registerAction');
+    Navigator.of(context).pushNamed("register");
   }
 }

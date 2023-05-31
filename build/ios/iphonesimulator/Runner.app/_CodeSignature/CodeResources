@@ -46,7 +46,7 @@
 		</data>
 		<key>Frameworks/App.framework/App</key>
 		<data>
-		FeUbVfx+YrjCMVOTgxilHl8r21w=
+		zuzUFuFvFPdRnFEyF6VDfm/H/sU=
 		</data>
 		<key>Frameworks/App.framework/Info.plist</key>
 		<data>
@@ -54,7 +54,7 @@
 		</data>
 		<key>Frameworks/App.framework/_CodeSignature/CodeResources</key>
 		<data>
-		aS1TkQfbnxmlPpBPiWfMKrK7zw0=
+		7GUmVxvFujj6w8RplRiTu3K8eWw=
 		</data>
 		<key>Frameworks/App.framework/flutter_assets/AssetManifest.bin</key>
 		<data>
@@ -166,7 +166,7 @@
 		</data>
 		<key>Frameworks/App.framework/flutter_assets/kernel_blob.bin</key>
 		<data>
-		i8meTtiQw4A+BT6yEB9mfYHxCAA=
+		r2+H6VFP/vDmUgPQDQFEy8XLINg=
 		</data>
 		<key>Frameworks/App.framework/flutter_assets/packages/agora_chat_uikit/images/2x/conversation_empty.png</key>
 		<data>
@@ -840,7 +840,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			AppxlH0AU+fLJecbZX6+DnfGJ0Y2BpTGlxH0yCc3wPk=
+			LClus1pB++AF5k9hHeu7WRQOlySGSNjrYFeu5vB8KyM=
 			</data>
 		</dict>
 		<key>Frameworks/App.framework/Info.plist</key>
@@ -854,7 +854,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZhzOnlta8bcdhiggzM4eTBeRHb9NbwXhJ/zjsfRW778=
+			/OdUA0gt3ziOcGoN01UlwWAemYKzf6gV7qJtDAxQ3tA=
 			</data>
 		</dict>
 		<key>Frameworks/App.framework/flutter_assets/AssetManifest.bin</key>
@@ -1050,7 +1050,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			tYTsAoTRUSfJzqrkVOoqEUIThuHTksVS4VZMDrHkZ90=
+			xKv9F8pQtAVFaXlum2AmD1drs74uqlDHIifP8TNpAjg=
 			</data>
 		</dict>
 		<key>Frameworks/App.framework/flutter_assets/packages/agora_chat_uikit/images/2x/conversation_empty.png</key>
