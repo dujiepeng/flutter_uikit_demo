@@ -234,6 +234,58 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
+  void showSuccess() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            contentPadding: const EdgeInsets.fromLTRB(24, 21, 24, 21),
+            titlePadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
+            actionsOverflowAlignment: OverflowBarAlignment.center,
+            actionsPadding: const EdgeInsets.fromLTRB(0, 12, 0, 20),
+            actionsAlignment: MainAxisAlignment.spaceEvenly,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Registration Success",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                const Divider(height: 32, color: Colors.transparent),
+                InkWell(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: const Color.fromRGBO(17, 78, 255, 1),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Login',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600),
+                        )
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    pop();
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   void pop() {
     Navigator.of(context).pop();
   }
