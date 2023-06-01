@@ -37,9 +37,12 @@ class _ContactInfoState extends State<ContactInfo> {
         .fetchConversationSilentMode(
             conversationId: widget.userInfo.userId,
             type: ChatConversationType.Chat);
-    setState(() {
-      _mute = result.remindType == ChatPushRemindType.NONE;
-    });
+
+    if (mounted) {
+      setState(() {
+        _mute = result.remindType == ChatPushRemindType.NONE;
+      });
+    }
   }
 
   @override

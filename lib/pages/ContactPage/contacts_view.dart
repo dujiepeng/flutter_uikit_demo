@@ -2,9 +2,11 @@ import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_uikit_demo/demo_default.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/chat_user_info_extension.dart';
+import 'package:flutter_uikit_demo/widgets/scroll_index_bar.dart';
 import 'package:flutter_uikit_demo/tools/user_info_manager.dart';
 
+import '../../demo_default.dart';
 import 'contact_info.dart';
 
 class ContactsView extends StatefulWidget {
@@ -17,7 +19,11 @@ class ContactsView extends StatefulWidget {
 class _ContactsViewState extends State<ContactsView>
     with AutomaticKeepAliveClientMixin {
   List<ChatUserInfo> userInfos = [];
+  final double _withoutIndexHeight = 60;
+  final double _includeIndexHeight = 90;
+  final Map<String, int> _groupOffsetMap = {};
 
+  final ScrollController _scrollController = ScrollController();
   @override
   void initState() {
     super.initState();
@@ -44,6 +50,22 @@ class _ContactsViewState extends State<ContactsView>
 
       userInfos.clear();
       userInfos.addAll(userMap.values);
+
+      userInfos.sort((a, b) => a.showName.compareTo(b.showName));
+
+      _groupOffsetMap.clear();
+      var groupOffset = 0;
+      for (var i = 0; i < userInfos.length; i++) {
+        bool showIndex = (i == 0 ||
+            (i > 0 &&
+                userInfos[i].firstLetter != userInfos[i - 1].firstLetter));
+        if (showIndex) {
+          _groupOffsetMap[userInfos[i].firstLetter] = groupOffset;
+          groupOffset = groupOffset + _includeIndexHeight.toInt();
+        } else {
+          groupOffset = groupOffset + _withoutIndexHeight.toInt();
+        }
+      }
       setState(() {});
     } on ChatError catch (e) {
       EasyLoading.showError(e.description);
@@ -53,47 +75,51 @@ class _ContactsViewState extends State<ContactsView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return RefreshIndicator(
-      onRefresh: _loadContacts,
-      child: ListView.separated(
-        separatorBuilder: (context, index) {
-          return const Divider(height: 0.3);
-        },
-        itemBuilder: (ctx, index) {
-          ChatUserInfo info = userInfos[index];
-          String showName = info.nickName ?? "";
-          if (showName.isEmpty) showName = info.userId;
-          return InkWell(
-            onTap: () {
-              _contactInfo.call(ctx, info);
-            },
-            child: Container(
-                color: Colors.white,
-                height: 80,
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(15, 12.5, 10, 12.5),
-                      child: SizedBox(
-                        height: 48,
-                        width: 48,
-                        child: userInfoAvatar(info),
-                      ),
-                    ),
-                    Text(
-                      showName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
-                  ],
-                )),
-          );
-        },
-        itemCount: userInfos.length,
-      ),
+
+    Widget content = ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      controller: _scrollController,
+      itemBuilder: (ctx, index) {
+        bool showHeader = (index == 0 ||
+            (index > 0 &&
+                userInfos[index].firstLetter !=
+                    userInfos[index - 1].firstLetter));
+        ChatUserInfo info = userInfos[index];
+        return InkWell(
+          onTap: () => _contactInfo.call(ctx, info),
+          child: ContactCell(
+            info,
+            showHeader: showHeader,
+          ),
+        );
+      },
+      itemCount: userInfos.length,
     );
+
+    content = Stack(
+      children: [
+        content,
+        ScrollIndexWidget(
+          indexBarCallBack: (str) {
+            debugPrint("indexBarCallBack $str");
+            if (_groupOffsetMap.containsKey(str)) {
+              double offset = _groupOffsetMap[str]!.toDouble();
+              if (offset > _scrollController.position.maxScrollExtent) {
+                offset = _scrollController.position.maxScrollExtent;
+              }
+              _scrollController.jumpTo(offset);
+            }
+          },
+        ),
+      ],
+    );
+
+    content = RefreshIndicator(
+      onRefresh: _loadContacts,
+      child: content,
+    );
+
+    return content;
   }
 
   void _contactInfo(BuildContext ctx, ChatUserInfo userInfo) {
@@ -129,4 +155,63 @@ class _ContactsViewState extends State<ContactsView>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class ContactCell extends StatelessWidget {
+  final ChatUserInfo contact;
+  final bool showHeader;
+  const ContactCell(this.contact, {this.showHeader = false, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget content = Row(
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          margin: const EdgeInsets.only(left: 10),
+          child: userInfoAvatar(contact),
+        ),
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.only(left: 10),
+            child: Text(
+              contact.showName,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (showHeader) {
+      content = Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 20,
+            color: Colors.grey[300],
+            alignment: Alignment.centerLeft,
+            child: Text(
+              ' ${contact.firstLetter}',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          const Divider(height: 10, color: Colors.transparent),
+          content,
+          const Divider(height: 10),
+        ],
+      );
+    } else {
+      content = Column(
+        children: [
+          content,
+          const Divider(height: 10),
+        ],
+      );
+    }
+
+    return content;
+  }
 }

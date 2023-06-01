@@ -212,7 +212,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _usernameController.text,
         _pwd,
       );
-      EasyLoading.showSuccess('Register success').then((value) => pop());
+      showSuccess();
     } on ChatError catch (e) {
       showError(e.description);
     } catch (e) {
