@@ -2,7 +2,8 @@ import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_uikit_demo/demo_default.dart';
-import 'package:flutter_uikit_demo/pages/ContactPage/contact_search_page.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/contacts/contact_search_page.dart';
+
 import 'package:flutter_uikit_demo/tools/user_info_manager.dart';
 
 import 'MessagesPage/messages_page.dart';
@@ -39,6 +40,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         centerTitle: true,
         shadowColor: Colors.white,
         backgroundColor: Colors.white,

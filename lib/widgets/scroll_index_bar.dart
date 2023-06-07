@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const indexWords = [
   'A',
@@ -36,23 +37,27 @@ class ScrollIndexWidget extends StatefulWidget {
   final Color floatLetterBgColor;
   final Color bgColor;
 
-  const ScrollIndexWidget(
-      {this.indexBarCallBack,
-      this.bgColor = Colors.black26,
-      this.floatLetterBgColor = Colors.grey,
-      super.key});
+  const ScrollIndexWidget({
+    this.indexBarCallBack,
+    this.bgColor = Colors.transparent,
+    this.floatLetterBgColor = const Color.fromRGBO(0, 95, 255, 1),
+    super.key,
+  });
 
   @override
   State<ScrollIndexWidget> createState() => _ScrollIndexWidgetState();
 }
 
+const topAlignment = 1.13;
+const bottomAlignment = 1.21;
+
 class _ScrollIndexWidgetState extends State<ScrollIndexWidget> {
-  final _letterExtent = 1.14 + 1.21;
-  Color _bgColor = Colors.transparent;
+  final _letterExtent = topAlignment + bottomAlignment;
+
   Color _textColor = Colors.black;
 
   double _letterOffset = 0.0;
-  String _letter = 'A';
+  String _letter = '';
   bool _floatLetterHide = true;
 
   @override
@@ -63,20 +68,30 @@ class _ScrollIndexWidgetState extends State<ScrollIndexWidget> {
   @override
   Widget build(BuildContext context) {
     List<Widget> indexList = [];
+
     for (var i = 0; i < indexWords.length; i++) {
-      indexList.add(Expanded(
-        child: Text(
-          indexWords[i],
-          style: TextStyle(fontSize: 10, color: _textColor),
+      bool isSelected = _letter == indexWords[i];
+      indexList.add(
+        Expanded(
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isSelected ? widget.floatLetterBgColor : widget.bgColor,
+            ),
+            child: Text(
+              indexWords[i],
+              style: TextStyle(
+                  fontSize: 10, color: isSelected ? _textColor : Colors.black),
+            ),
+          ),
         ),
-      ));
+      );
     }
 
     double screenHeigh = MediaQuery.of(context).size.height;
 
-    Widget content = Container(
+    Widget content = SizedBox(
       width: 25,
-      color: _bgColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: indexList,
@@ -85,30 +100,8 @@ class _ScrollIndexWidgetState extends State<ScrollIndexWidget> {
 
     content = GestureDetector(
       child: content,
-      onVerticalDragUpdate: (details) {
-        int index = getIndex(details.localPosition);
-        String str = indexWords[index];
-        if (_letter == str) {
-          return;
-        }
-        _letter = str;
-        setState(() {
-          _letterOffset = _letterExtent / indexWords.length * index - 1.14;
-        });
-        widget.indexBarCallBack?.call(str);
-      },
-      onVerticalDragDown: (details) {
-        int index = getIndex(details.localPosition);
-        String str = indexWords[index];
-        _letter = str;
-        widget.indexBarCallBack?.call(str);
-        _floatLetterHide = false;
-        setState(() {
-          _letterOffset = _letterExtent / indexWords.length * index - 1.14;
-          _bgColor = widget.bgColor;
-          _textColor = Colors.white;
-        });
-      },
+      onVerticalDragUpdate: (details) => selectedChanged(details.localPosition),
+      onVerticalDragDown: (details) => selectedChanged(details.localPosition),
       onTapUp: (details) {
         cancelTap();
       },
@@ -181,8 +174,28 @@ class _ScrollIndexWidgetState extends State<ScrollIndexWidget> {
     _letter = '';
     _letterOffset = 0;
     setState(() {
-      _bgColor = Colors.transparent;
       _textColor = Colors.black;
     });
+  }
+
+  void selectedChanged(Offset localPosition) {
+    int index = getIndex(localPosition);
+    String str = indexWords[index];
+    if (_letter != str) {
+      widget.indexBarCallBack?.call(str);
+      _floatLetterHide = false;
+      setState(() {
+        _letterOffset =
+            _letterExtent / indexWords.length * index - topAlignment;
+        _textColor = Colors.white;
+      });
+      vibrate();
+      _letter = str;
+    }
+  }
+
+  Future<void> vibrate() async {
+    await HapticFeedback.selectionClick();
+    // await HapticFeedback.vibrate();
   }
 }

@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/contacts/contact_info.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/groups/group_info.dart';
+import 'package:flutter_uikit_demo/pages/ConversationPage/MessagesPage/messages_page.dart';
 import 'package:flutter_uikit_demo/tools/tool.dart';
+import 'pages/ContactPage/contacts/contacts_select_page.dart';
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
 import 'pages/register_page.dart';
@@ -57,6 +61,19 @@ class MyApp extends StatelessWidget {
             return const HomePage();
           } else if (settings.name == 'register') {
             return const RegisterPage();
+          } else if (settings.name == '/group_info') {
+            ChatGroup group = settings.arguments as ChatGroup;
+            return GroupInfo(group);
+          } else if (settings.name == '/contact_info') {
+            ChatUserInfo userInfo = settings.arguments as ChatUserInfo;
+            return ContactInfo(userInfo);
+          } else if (settings.name == '/message_page') {
+            Map map = settings.arguments as Map;
+            ChatConversation conversation = map['conversation'];
+            ChatUserInfo? userInfo = map['userInfo'];
+            return MessagePage(conversation: conversation, userInfo: userInfo);
+          } else if (settings.name == '/contacts_select') {
+            return const ContactsSelectPage();
           } else {
             return Container();
           }

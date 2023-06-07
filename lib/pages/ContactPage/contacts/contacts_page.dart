@@ -1,11 +1,13 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_uikit_demo/pages/ContactPage/request_model.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/groups/groups_list_view.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/requests/request_model.dart';
+import 'package:flutter_uikit_demo/pages/ContactPage/requests/requests_view.dart';
+
 import 'package:flutter_uikit_demo/tools/tool.dart';
 
 import 'contacts_view.dart';
-import 'requests_view.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key, this.onUnreadFlagChange});
@@ -32,7 +34,7 @@ class _ContactsPageState extends State<ContactsPage>
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 2, vsync: this);
+    _controller = TabController(length: 3, vsync: this);
     _controller.addListener(() {
       setState(() {});
     });
@@ -57,10 +59,11 @@ class _ContactsPageState extends State<ContactsPage>
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
+          elevation: 0,
           shadowColor: Colors.white,
           backgroundColor: Colors.white,
           title: const Text('Contacts',
@@ -73,8 +76,8 @@ class _ContactsPageState extends State<ContactsPage>
             padding: EdgeInsets.zero,
             indicatorSize: TabBarIndicatorSize.tab,
             indicatorColor: const Color.fromRGBO(17, 78, 255, 1),
-            indicatorWeight: 2,
-            indicatorPadding: const EdgeInsets.fromLTRB(60, 0, 60, 0),
+            indicatorWeight: 3,
+            indicatorPadding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             tabs: [
               Tab(
                 child: SizedBox(
@@ -88,11 +91,21 @@ class _ContactsPageState extends State<ContactsPage>
               ),
               Tab(
                 child: SizedBox(
-                  width: 85,
+                    width: 100,
+                    child: Center(
+                      child: Text("Groups",
+                          style: _controller.index == 1
+                              ? selectedStyle
+                              : unselectedStyle),
+                    )),
+              ),
+              Tab(
+                child: SizedBox(
+                  width: 100,
                   child: Stack(
                     children: [
                       Text("Requests",
-                          style: _controller.index == 1
+                          style: _controller.index == 2
                               ? selectedStyle
                               : unselectedStyle),
                       Positioned(
@@ -113,6 +126,7 @@ class _ContactsPageState extends State<ContactsPage>
           controller: _controller,
           children: const [
             ContactsView(),
+            GroupsListView(),
             RequestsView(),
           ],
         ),

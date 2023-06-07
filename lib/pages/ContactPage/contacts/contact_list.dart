@@ -1,29 +1,34 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_uikit_demo/pages/ContactPage/chat_user_info_extension.dart';
-import 'package:flutter_uikit_demo/widgets/scroll_index_bar.dart';
-import 'package:flutter_uikit_demo/tools/user_info_manager.dart';
+import 'package:flutter_uikit_demo/extensions/chat_user_info_extension.dart';
 
-import '../../demo_default.dart';
-import 'contact_info.dart';
+import '../../../demo_default.dart';
+import '../../../tools/user_info_manager.dart';
+import '../../../widgets/scroll_index_bar.dart';
 
-class ContactsView extends StatefulWidget {
-  const ContactsView({super.key});
-
+class ContactList extends StatefulWidget {
+  const ContactList({
+    super.key,
+    this.enableSelect = false,
+    this.onSelect,
+    this.onUserTap,
+  });
+  final bool enableSelect;
+  final void Function(List<ChatUserInfo> list)? onSelect;
+  final void Function(ChatUserInfo info)? onUserTap;
   @override
-  State<ContactsView> createState() => _ContactsViewState();
+  State<ContactList> createState() => _ContactListState();
 }
 
-class _ContactsViewState extends State<ContactsView>
-    with AutomaticKeepAliveClientMixin {
+class _ContactListState extends State<ContactList> {
   List<ChatUserInfo> userInfos = [];
   final double _withoutIndexHeight = 60;
   final double _includeIndexHeight = 90;
   final Map<String, int> _groupOffsetMap = {};
-
+  final List<ChatUserInfo> selectList = [];
   final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -41,41 +46,8 @@ class _ContactsViewState extends State<ContactsView>
     _loadContacts();
   }
 
-  Future<void> _loadContacts() async {
-    try {
-      List<String> list = await ChatClient.getInstance.contactManager
-          .getAllContactsFromServer();
-      Map<String, ChatUserInfo> userMap =
-          await UserInfoManager.getUserInfoList(list);
-
-      userInfos.clear();
-      userInfos.addAll(userMap.values);
-
-      userInfos.sort((a, b) => a.showName.compareTo(b.showName));
-
-      _groupOffsetMap.clear();
-      var groupOffset = 0;
-      for (var i = 0; i < userInfos.length; i++) {
-        bool showIndex = (i == 0 ||
-            (i > 0 &&
-                userInfos[i].firstLetter != userInfos[i - 1].firstLetter));
-        if (showIndex) {
-          _groupOffsetMap[userInfos[i].firstLetter] = groupOffset;
-          groupOffset = groupOffset + _includeIndexHeight.toInt();
-        } else {
-          groupOffset = groupOffset + _withoutIndexHeight.toInt();
-        }
-      }
-      setState(() {});
-    } on ChatError catch (e) {
-      EasyLoading.showError(e.description);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     Widget content = ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       controller: _scrollController,
@@ -85,11 +57,27 @@ class _ContactsViewState extends State<ContactsView>
                 userInfos[index].firstLetter !=
                     userInfos[index - 1].firstLetter));
         ChatUserInfo info = userInfos[index];
+        bool selected = selectList.contains(info);
         return InkWell(
-          onTap: () => _contactInfo.call(ctx, info),
+          onTap: () {
+            if (widget.enableSelect) {
+              setState(() {
+                if (selected) {
+                  selectList.remove(info);
+                } else {
+                  selectList.add(info);
+                }
+                widget.onSelect?.call(selectList);
+              });
+            } else {
+              widget.onUserTap?.call(info);
+            }
+          },
           child: ContactCell(
             info,
+            selected: selected,
             showHeader: showHeader,
+            enableSelect: widget.enableSelect,
           ),
         );
       },
@@ -101,7 +89,6 @@ class _ContactsViewState extends State<ContactsView>
         content,
         ScrollIndexWidget(
           indexBarCallBack: (str) {
-            debugPrint("indexBarCallBack $str");
             if (_groupOffsetMap.containsKey(str)) {
               double offset = _groupOffsetMap[str]!.toDouble();
               if (offset > _scrollController.position.maxScrollExtent) {
@@ -122,21 +109,10 @@ class _ContactsViewState extends State<ContactsView>
     return content;
   }
 
-  void _contactInfo(BuildContext ctx, ChatUserInfo userInfo) {
-    Navigator.of(ctx).push(MaterialPageRoute(
-      builder: (ctx) {
-        return ContactInfo(userInfo);
-      },
-    )).then((value) {
-      if (value is Map) {
-        String userId = value.keys.first as String;
-        String str = value[userId];
-        if (str == "delete") {
-          userInfos.remove(userInfo);
-          setState(() {});
-        }
-      }
-    });
+  @override
+  void dispose() {
+    ChatClient.getInstance.contactManager.removeEventHandler("handlerKey");
+    super.dispose();
   }
 
   void _addContact(String userId) async {
@@ -147,20 +123,49 @@ class _ContactsViewState extends State<ContactsView>
     setState(() {});
   }
 
-  @override
-  void dispose() {
-    ChatClient.getInstance.contactManager.removeEventHandler("handlerKey");
-    super.dispose();
-  }
+  Future<void> _loadContacts() async {
+    try {
+      List<String> list = await ChatClient.getInstance.contactManager
+          .getAllContactsFromServer();
+      Map<String, ChatUserInfo> userMap =
+          await UserInfoManager.getUserInfoList(list);
 
-  @override
-  bool get wantKeepAlive => true;
+      userInfos.clear();
+      userInfos.addAll(userMap.values);
+      userInfos.sort((a, b) => a.showName.compareTo(b.showName));
+
+      _groupOffsetMap.clear();
+      var groupOffset = 0;
+      for (var i = 0; i < userInfos.length; i++) {
+        bool showIndex = (i == 0 ||
+            (i > 0 &&
+                userInfos[i].firstLetter != userInfos[i - 1].firstLetter));
+        if (showIndex) {
+          _groupOffsetMap[userInfos[i].firstLetter] = groupOffset;
+          groupOffset = groupOffset + _includeIndexHeight.toInt();
+        } else {
+          groupOffset = groupOffset + _withoutIndexHeight.toInt();
+        }
+      }
+      setState(() {});
+    } on ChatError catch (e) {
+      EasyLoading.showError(e.description);
+    }
+  }
 }
 
 class ContactCell extends StatelessWidget {
   final ChatUserInfo contact;
   final bool showHeader;
-  const ContactCell(this.contact, {this.showHeader = false, super.key});
+  final bool selected;
+  final bool enableSelect;
+  const ContactCell(
+    this.contact, {
+    this.selected = false,
+    this.showHeader = false,
+    this.enableSelect = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +186,16 @@ class ContactCell extends StatelessWidget {
             ),
           ),
         ),
+        enableSelect
+            ? Icon(
+                selected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                color: selected
+                    ? const Color.fromRGBO(0, 95, 255, 1)
+                    : Colors.grey[300])
+            : Container(),
+        const SizedBox(width: 20)
       ],
     );
 

@@ -54,11 +54,12 @@ class _MessagePageState extends State<MessagePage> {
       appBar: AppBar(
         centerTitle: false,
         titleSpacing: 0,
+        elevation: 0,
         iconTheme: const IconThemeData(
           color: Colors.black,
         ),
-        shadowColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
+        shadowColor: Colors.white,
+        backgroundColor: Colors.white,
         title: Row(
           children: [
             userInfoAvatar(widget.userInfo),

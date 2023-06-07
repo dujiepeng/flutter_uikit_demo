@@ -1,9 +1,9 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_uikit_demo/demo_default.dart';
-import 'package:flutter_uikit_demo/pages/ConversationPage/MessagesPage/messages_page.dart';
+
+import '../../../demo_default.dart';
+import '../../../widgets/custom_button.dart';
 
 class ContactInfo extends StatefulWidget {
   const ContactInfo(this.userInfo, {super.key});
@@ -23,26 +23,6 @@ class _ContactInfoState extends State<ContactInfo> {
     super.initState();
     _userInfo = widget.userInfo;
     _loadUserInfo();
-  }
-
-  void _loadUserInfo() async {
-    Map<String, ChatUserInfo> map = await ChatClient.getInstance.userInfoManager
-        .fetchUserInfoById([widget.userInfo.userId], expireTime: 0);
-    if (map.isNotEmpty) {
-      setState(() {
-        _userInfo = map.values.first;
-      });
-    }
-    ChatSilentModeResult result = await ChatClient.getInstance.pushManager
-        .fetchConversationSilentMode(
-            conversationId: widget.userInfo.userId,
-            type: ChatConversationType.Chat);
-
-    if (mounted) {
-      setState(() {
-        _mute = result.remindType == ChatPushRemindType.NONE;
-      });
-    }
   }
 
   @override
@@ -89,26 +69,8 @@ class _ContactInfoState extends State<ContactInfo> {
                         fontSize: 12, fontWeight: FontWeight.w400),
                   ),
                   const Divider(height: 20, color: Colors.transparent),
-                  InkWell(
-                    onTap: () {
-                      ChatClient.getInstance.chatManager
-                          .getConversation(widget.userInfo.userId)
-                          .then((value) {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) {
-                            return MessagePage(
-                              conversation: value!,
-                              userInfo: widget.userInfo,
-                            );
-                          },
-                        )).then((value) {
-                          AgoraChatUIKit.of(context)
-                              .conversationsController
-                              .loadAllConversations();
-                        });
-                      });
-                    },
-                    child: Container(
+                  CustomButton(
+                    Container(
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
@@ -117,48 +79,36 @@ class _ContactInfoState extends State<ContactInfo> {
                       ),
                       child: const Icon(Icons.chat),
                     ),
+                    title: 'Chat',
+                    onTap: () async {
+                      var conversation = await ChatClient
+                          .getInstance.chatManager
+                          .getConversation(widget.userInfo.userId);
+                      pushToMessagePage(conversation!);
+                    },
                   ),
-                  const Divider(height: 8, color: Colors.transparent),
-                  const Text(
-                    "Chat",
-                    style: TextStyle(color: Color.fromRGBO(102, 102, 102, 1)),
-                  )
                 ],
               ),
             )),
           ),
           SliverList(
             delegate: SliverChildListDelegate([
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Center(
-                        child: Text(
-                      "Mute Notifications",
-                      style: TextStyle(
-                          color: Color.fromRGBO(51, 51, 51, 1),
-                          fontWeight: FontWeight.w600),
-                    )),
-                    CupertinoSwitch(
-                      activeColor: const Color.fromRGBO(17, 78, 255, 1),
-                      value: _mute,
-                      onChanged: (value) async {
-                        if (mounted) {
-                          setState(() => _mute = value);
-                        }
-                        await ChatClient.getInstance.pushManager
-                            .setConversationSilentMode(
-                                conversationId: widget.userInfo.userId,
-                                type: ChatConversationType.Chat,
-                                param: ChatSilentModeParam.remindType(value
-                                    ? ChatPushRemindType.NONE
-                                    : ChatPushRemindType.ALL));
-                      },
-                    )
-                  ],
-                ),
+              SwitchListTile.adaptive(
+                title: const Text('Mute Notifications'),
+                value: _mute,
+                onChanged: (value) async {
+                  if (mounted) {
+                    setState(() => _mute = value);
+                  }
+                  await ChatClient.getInstance.pushManager
+                      .setConversationSilentMode(
+                    conversationId: widget.userInfo.userId,
+                    type: ChatConversationType.Chat,
+                    param: ChatSilentModeParam.remindType(value
+                        ? ChatPushRemindType.NONE
+                        : ChatPushRemindType.ALL),
+                  );
+                },
               ),
               const Divider(height: 8),
               InkWell(
@@ -220,5 +170,34 @@ class _ContactInfoState extends State<ContactInfo> {
         ],
       ),
     );
+  }
+
+  void _loadUserInfo() async {
+    Map<String, ChatUserInfo> map = await ChatClient.getInstance.userInfoManager
+        .fetchUserInfoById([widget.userInfo.userId], expireTime: 0);
+    if (map.isNotEmpty) {
+      _userInfo = map.values.first;
+    }
+    ChatSilentModeResult result = await ChatClient.getInstance.pushManager
+        .fetchConversationSilentMode(
+            conversationId: widget.userInfo.userId,
+            type: ChatConversationType.Chat);
+
+    if (mounted) {
+      setState(() {
+        _mute = result.remindType == ChatPushRemindType.NONE;
+      });
+    }
+  }
+
+  void pushToMessagePage(ChatConversation conversation) {
+    Map map = {};
+    map['conversation'] = conversation;
+    if (_userInfo != null) {
+      map['userInfo'] = _userInfo;
+    }
+    Navigator.pushNamed(context, '/message_page', arguments: map).then((value) {
+      AgoraChatUIKit.of(context).conversationsController.loadAllConversations();
+    });
   }
 }
