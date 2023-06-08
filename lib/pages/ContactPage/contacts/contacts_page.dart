@@ -41,9 +41,11 @@ class _ContactsPageState extends State<ContactsPage>
 
     ChatClient.getInstance.contactManager.addEventHandler(
       "contact_event_key",
-      ContactEventHandler(onContactInvited: (userId, reason) {
-        _addRequest.call(userId, reason);
-      }),
+      ContactEventHandler(
+        onContactInvited: (userId, reason) {
+          _addRequest.call(userId, reason);
+        },
+      ),
     );
 
     ChatClient.getInstance.groupManager

@@ -13,11 +13,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: dev
-      resolved-ref: aa5e72c2361d93b40a0478a665efaba348090963
+      ref: "4883518"
+      resolved-ref: "488351858a36c3b03918b87e706ef60767276bd6"
       url: "https://github.com/easemob/flutter_chat_uikit.git"
     source: git
-    version: "0.1.0"
+    version: "1.0.0"
   async:
     dependency: transitive
     description:

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_uikit_demo/tools/tool.dart';
 
+import '../../../tools/image_loader.dart';
 import 'request_model.dart';
 
 class RequestsView extends StatefulWidget {
@@ -29,26 +30,27 @@ class _RequestsViewState extends State<RequestsView>
     return ListView.separated(
       itemBuilder: (ctx, index) {
         RequestModel model = list[index];
+        String avatarUrl = model.avatarURL ?? "";
         Widget content = ListTile(
-          leading: FadeInImage.assetNetwork(
-            placeholder: "placeholder",
-            placeholderErrorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                    color: Colors.red, borderRadius: BorderRadius.circular(40)),
-              );
-            },
-            image: model.avatarURL ?? "",
-            imageErrorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                    color: Colors.red, borderRadius: BorderRadius.circular(40)),
-              );
-            },
+          leading: Container(
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: avatarUrl.isEmpty
+                ? AgoraImageLoader.defaultAvatar()
+                : FadeInImage(
+                    placeholder: AgoraImageLoader.assetImage("avatar.png"),
+                    // use in local, in your app, need server uri.
+                    image:
+                        AssetImage(ImageLoader.getImg("avatar$avatarUrl.png")),
+                    placeholderErrorBuilder: (context, error, stackTrace) {
+                      return AgoraImageLoader.defaultAvatar();
+                    },
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return AgoraImageLoader.defaultAvatar();
+                    },
+                  ),
           ),
           title: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 17, 0),
@@ -72,7 +74,7 @@ class _RequestsViewState extends State<RequestsView>
             ),
           ),
           subtitle: Text(
-            model.requestMsg ?? "",
+            model.requestMsg ?? "Sent you a friend request.",
             style: const TextStyle(
                 fontWeight: FontWeight.w400,
                 fontSize: 14,

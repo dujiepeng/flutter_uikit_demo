@@ -14,7 +14,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   ChatUserInfo? _userInfo;
-  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -270,7 +269,6 @@ class _SettingsPageState extends State<SettingsPage> {
         try {
           _userInfo = await ChatClient.getInstance.userInfoManager
               .updateUserInfo(avatarUrl: value.toString());
-          debugPrint("更新成功");
           setState(() {});
         } on ChatError catch (e) {
           EasyLoading.showError(e.description);
@@ -280,84 +278,34 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showNicknameInputBar() {
-    AgoraDialog(
-      titleLabel: "Change Nickname",
-      titleStyle: const TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 16,
-      ),
-      content: SizedBox(
-        height: 40,
-        width: 280,
-        child: TextField(
-          controller: _controller,
-          cursorColor: Colors.blue,
-          onChanged: (text) {},
-          decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color.fromRGBO(250, 250, 250, 1),
-              contentPadding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
-              border: const OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.all(Radius.circular(30)),
-              ),
-              suffixIconConstraints:
-                  const BoxConstraints(maxHeight: 30, maxWidth: 30),
-              suffixIcon: InkWell(
-                onTap: () {
-                  _controller.text = "";
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.grey,
-                      ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      )),
-                ),
-              ),
-              hintText: "Nickname",
-              hintStyle: const TextStyle(color: Colors.grey)),
-          obscureText: false,
-        ),
-      ),
-      items: [
-        AgoraDialogItem(
-          label: "Cancel",
-          onTap: () => Navigator.of(context).pop(),
-          labelStyle: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        AgoraDialogItem(
-          label: "Confirm",
-          onTap: () {
-            _updateNickname();
-            Navigator.of(context).pop();
-          },
-          backgroundColor: const Color.fromRGBO(17, 78, 255, 1),
-          labelStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-      ],
-    ).show(context);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AgoraDialog.input(
+          title: 'Change Nickname',
+          hiddenList: const ['Nickname'],
+          items: [
+            AgoraDialogItem.cancel(
+              onTap: Navigator.of(context).pop,
+            ),
+            AgoraDialogItem.confirm(
+              onTap: (labels) {
+                Navigator.of(context).pop();
+                if (labels!.first.isNotEmpty) {
+                  _updateNickname(labels.first);
+                }
+              },
+            )
+          ],
+        );
+      },
+    );
   }
 
-  void _updateNickname() async {
+  void _updateNickname(String nickname) async {
     try {
       _userInfo = await ChatClient.getInstance.userInfoManager
-          .updateUserInfo(nickname: _controller.text);
-      _controller.text = "";
+          .updateUserInfo(nickname: nickname);
       setState(() {});
     } on ChatError catch (e) {
       EasyLoading.showError(e.description);

@@ -35,7 +35,7 @@ dependencies:
   agora_chat_uikit:
     git:
       url: https://github.com/easemob/flutter_chat_uikit.git
-      ref: dev
+      ref: '4883518'
 
   flutter_easyloading: ^3.0.5
 

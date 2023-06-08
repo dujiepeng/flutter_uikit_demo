@@ -35,7 +35,14 @@ class _GroupInfoState extends State<GroupInfo> {
     );
 
     List<Widget> list = [];
-    list.add(const Icon(Icons.group, size: 80));
+    list.add(InkWell(
+      onTap: () {
+        _group.permissionType == ChatGroupPermissionType.Owner
+            ? showOwnerActionSheet()
+            : showMemberActionSheet();
+      },
+      child: const Icon(Icons.group, size: 80),
+    ));
     list.add(const Divider(height: 8, color: Colors.transparent));
     Widget texts = Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -91,14 +98,9 @@ class _GroupInfoState extends State<GroupInfo> {
     list.addAll([
       memberWidget(),
       muteNotificationWidget(),
-      () {
-        if ((_group.permissionType ?? ChatGroupPermissionType.Member) ==
-            ChatGroupPermissionType.Owner) {
-          return destroyGroupWidget();
-        } else {
-          return leaveGroupWidget();
-        }
-      }(),
+      leaveOrDestroyGroupWidget(
+          (_group.permissionType ?? ChatGroupPermissionType.Member) ==
+              ChatGroupPermissionType.Owner),
     ]);
 
     Widget content = ListView(
@@ -194,22 +196,44 @@ class _GroupInfoState extends State<GroupInfo> {
     );
   }
 
-  Widget leaveGroupWidget() {
-    return HighlightListTile(
-      'Leave Group',
-      onTap: () {
-        debugPrint('onTap');
-      },
-    );
+  Widget leaveOrDestroyGroupWidget(bool destroy) {
+    return HighlightListTile(destroy ? 'Destroy Group' : 'Leave Group',
+        onTap: () {
+      Widget content = AgoraDialog.normal(
+        title: destroy ? "Destroy Group?" : "Leave Group?",
+        subTitle: destroy
+            ? "This action will destroy the group and cannot be undone."
+            : "This action will leave.",
+        items: [
+          AgoraDialogItem.cancel(onTap: Navigator.of(context).pop),
+          AgoraDialogItem.confirm(
+            onTap: (_) async {
+              Navigator.of(context).pop();
+              try {
+                EasyLoading.show();
+                if (destroy) {
+                  await ChatClient.getInstance.groupManager
+                      .destroyGroup(_group.groupId);
+                } else {
+                  await ChatClient.getInstance.groupManager
+                      .leaveGroup(_group.groupId);
+                }
+                dismiss();
+              } on ChatError catch (e) {
+                EasyLoading.showError(e.description);
+              } finally {
+                EasyLoading.dismiss();
+              }
+            },
+          ),
+        ],
+      );
+      showDialog(context: context, builder: (_) => content);
+    });
   }
 
-  Widget destroyGroupWidget() {
-    return HighlightListTile(
-      'Destroy Group',
-      onTap: () {
-        debugPrint('onTap');
-      },
-    );
+  void dismiss() {
+    Navigator.of(context).pop();
   }
 
   void fetchGroupInfo() async {
@@ -250,5 +274,76 @@ class _GroupInfoState extends State<GroupInfo> {
     } finally {
       EasyLoading.dismiss();
     }
+  }
+
+  void showOwnerActionSheet() {
+    AgoraBottomSheet(items: [
+      AgoraBottomSheetItem(
+        'Change Group Name',
+        onTap: () {
+          Navigator.of(context).pop();
+          showChangeInfo(true);
+        },
+      ),
+      AgoraBottomSheetItem(
+        'Change Group Description',
+        onTap: () {
+          Navigator.of(context).pop();
+          showChangeInfo(false);
+        },
+      ),
+      AgoraBottomSheetItem(
+        'Copy Group ID',
+        onTap: () {
+          Navigator.of(context).pop();
+        },
+      ),
+    ]).show(context);
+  }
+
+  void showMemberActionSheet() {
+    AgoraBottomSheet(items: [
+      AgoraBottomSheetItem(
+        'Copy Group ID',
+        onTap: () {},
+      ),
+    ]).show(context);
+  }
+
+  void showChangeInfo(bool isGroupName) {
+    Widget content = AgoraDialog.input(
+      hiddenList: isGroupName ? const ['Group Name'] : ['Group Description'],
+      title: isGroupName ? 'Change group name' : 'Change group description',
+      items: [
+        AgoraDialogItem.cancel(
+          onTap: Navigator.of(context).pop,
+        ),
+        AgoraDialogItem.confirm(
+          onTap: (labels) async {
+            Navigator.of(context).pop();
+            try {
+              EasyLoading.show(status: 'Changing...');
+              if (isGroupName) {
+                await ChatClient.getInstance.groupManager
+                    .changeGroupName(_group.groupId, labels![0]);
+              } else {
+                await ChatClient.getInstance.groupManager
+                    .changeGroupDescription(_group.groupId, labels![0]);
+              }
+              ChatGroup? group = await ChatClient.getInstance.groupManager
+                  .getGroupWithId(_group.groupId);
+              _group = group!;
+              setState(() {});
+            } on ChatError catch (e) {
+              EasyLoading.showError(e.description);
+            } finally {
+              EasyLoading.dismiss();
+            }
+          },
+        ),
+      ],
+    );
+
+    showDialog(context: context, builder: (_) => content);
   }
 }

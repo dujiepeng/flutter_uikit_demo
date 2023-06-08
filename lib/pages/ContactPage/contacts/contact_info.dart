@@ -113,42 +113,37 @@ class _ContactInfoState extends State<ContactInfo> {
               const Divider(height: 8),
               InkWell(
                 onTap: () {
-                  AgoraDialog(
-                    titleLabel: showName,
-                    content: const Text(
-                      "Delete this contact.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                      ),
-                    ),
+                  Widget dialog = AgoraDialog.normal(
+                    title: 'Delete Contact',
+                    subTitle: 'Are you sure you want to delete this contact?',
                     items: [
-                      AgoraDialogItem(
-                          label: "Cancel",
-                          onTap: () => Navigator.of(context).pop()),
-                      AgoraDialogItem(
-                          label: "Confirm",
-                          labelStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white),
-                          backgroundColor: const Color.fromRGBO(17, 78, 255, 1),
-                          onTap: () async {
-                            Navigator.of(context).pop();
-                            ChatClient.getInstance.contactManager
-                                .deleteContact(widget.userInfo.userId)
-                                .then((value) {
-                              Navigator.of(context)
-                                  .pop({widget.userInfo.userId: "delete"});
-                            }).catchError((e) {
-                              String str = (e as ChatError).description;
-                              EasyLoading.showError(str);
-                            });
-                          })
+                      AgoraDialogItem.cancel(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      AgoraDialogItem.confirm(
+                        onTap: (_) async {
+                          Navigator.of(context).pop();
+                          ChatClient.getInstance.contactManager
+                              .deleteContact(widget.userInfo.userId)
+                              .then((value) {
+                            Navigator.of(context)
+                                .pop({widget.userInfo.userId: "delete"});
+                          }).catchError((e) {
+                            String str = (e as ChatError).description;
+                            EasyLoading.showError(str);
+                          });
+                        },
+                      )
                     ],
-                  ).show(context);
+                  );
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return dialog;
+                    },
+                  );
                 },
                 child: const Padding(
                   padding: EdgeInsets.fromLTRB(20, 13, 20, 13),

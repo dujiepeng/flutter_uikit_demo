@@ -68,25 +68,6 @@ class _ConversationsPageState extends State<ConversationsPage> {
           }
           return null;
         },
-        nicknameBuilder: (context, conversation) {
-          if (conversation.type == ChatConversationType.Chat) {
-            ChatUserInfo? info = UserInfoManager.getUserInfo(
-                conversation.id, () => setState(() {}));
-            String showName = info?.nickName ?? "";
-            if (showName.isEmpty) {
-              showName = conversation.id;
-            }
-            return Text(
-              showName,
-              style: const TextStyle(
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            );
-          }
-          return null;
-        },
         onItemTap: (conversation) {
           ChatUserInfo? info = UserInfoManager.getUserInfo(
               conversation.id, () => setState(() {}));

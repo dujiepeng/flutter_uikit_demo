@@ -18,7 +18,7 @@ class _GroupsListViewState extends State<GroupsListView>
   void initState() {
     super.initState();
     addListener();
-    _loadGroups();
+    fetchGroups();
   }
 
   @override
@@ -33,7 +33,8 @@ class _GroupsListViewState extends State<GroupsListView>
           child: ListTile(
             onTap: () {
               Navigator.pushNamed(context, '/group_info',
-                  arguments: groups[index]);
+                      arguments: groups[index])
+                  .then((value) => reloadGroups());
             },
             leading: Container(
               width: 46,
@@ -62,13 +63,13 @@ class _GroupsListViewState extends State<GroupsListView>
     );
 
     content = RefreshIndicator(
-      onRefresh: _loadGroups,
+      onRefresh: fetchGroups,
       child: content,
     );
     return content;
   }
 
-  Future<void> _loadGroups() async {
+  Future<void> fetchGroups() async {
     try {
       groups = await ChatClient.getInstance.groupManager
           .fetchJoinedGroupsFromServer();
@@ -77,6 +78,13 @@ class _GroupsListViewState extends State<GroupsListView>
       EasyLoading.showError(e.description,
           duration: const Duration(seconds: 2));
     }
+  }
+
+  void reloadGroups() async {
+    try {
+      groups = await ChatClient.getInstance.groupManager.getJoinedGroups();
+      setState(() {});
+    } on ChatError {}
   }
 
   void addListener() {
