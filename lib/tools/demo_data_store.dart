@@ -50,7 +50,7 @@ class DemoDataStore {
     requestCount.value = list.length;
   }
 
-  List<RequestModel> requests() {
+  List<RequestModel> getRequests() {
     List<RequestModel> ret = [];
     List<String>? list = prefers?.getStringList("requestKey") ?? [];
     ret = list.map((element) {
@@ -67,7 +67,6 @@ class DemoDataStore {
 
   Future<void> init() async {
     prefers = await SharedPreferences.getInstance();
-    requests();
-    return;
+    getRequests();
   }
 }

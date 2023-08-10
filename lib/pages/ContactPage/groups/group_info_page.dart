@@ -6,14 +6,14 @@ import '../../../widgets/custom_button.dart';
 import '../../../widgets/highlight_list_tile.dart';
 import '../../../widgets/number_list_tile.dart';
 
-class GroupInfo extends StatefulWidget {
-  const GroupInfo(this.group, {super.key});
+class GroupInfoPage extends StatefulWidget {
+  const GroupInfoPage(this.group, {super.key});
   final ChatGroup group;
   @override
-  State<GroupInfo> createState() => _GroupInfoState();
+  State<GroupInfoPage> createState() => _GroupInfoPageState();
 }
 
-class _GroupInfoState extends State<GroupInfo> {
+class _GroupInfoPageState extends State<GroupInfoPage> {
   late ChatGroup _group;
   bool _mute = false;
   @override
@@ -108,18 +108,7 @@ class _GroupInfoState extends State<GroupInfo> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        shadowColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-            icon: const Icon(
-              Icons.navigate_before,
-              color: Color.fromRGBO(51, 51, 51, 1),
-              size: 40,
-            ),
-            onPressed: () => Navigator.of(context).pop()),
-      ),
+      appBar: AppBar(),
       body: content,
     );
   }
@@ -173,7 +162,18 @@ class _GroupInfoState extends State<GroupInfo> {
     return NumberListTile(
       'Members',
       number: _group.memberCount ?? 0,
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(context, '/group_members', arguments: _group)
+            .then((value) async {
+          ChatGroup? group = await ChatClient.getInstance.groupManager
+              .getGroupWithId(_group.groupId);
+          if (group != null) {
+            setState(() {
+              _group = group;
+            });
+          }
+        });
+      },
     );
   }
 
@@ -264,6 +264,7 @@ class _GroupInfoState extends State<GroupInfo> {
   }
 
   void inviteUsers(List<String> userIds) async {
+    if (userIds.isEmpty) return;
     try {
       EasyLoading.show(status: 'inviting...');
       await ChatClient.getInstance.groupManager
@@ -277,37 +278,39 @@ class _GroupInfoState extends State<GroupInfo> {
   }
 
   void showOwnerActionSheet() {
-    AgoraBottomSheet(items: [
-      AgoraBottomSheetItem(
+    showAgoraBottomSheet(context: context, items: [
+      AgoraBottomSheetItem.normal(
         'Change Group Name',
-        onTap: () {
+        onTap: () async {
           Navigator.of(context).pop();
           showChangeInfo(true);
         },
       ),
-      AgoraBottomSheetItem(
+      AgoraBottomSheetItem.normal(
         'Change Group Description',
-        onTap: () {
+        onTap: () async {
           Navigator.of(context).pop();
           showChangeInfo(false);
         },
       ),
-      AgoraBottomSheetItem(
+      AgoraBottomSheetItem.normal(
         'Copy Group ID',
-        onTap: () {
+        onTap: () async {
           Navigator.of(context).pop();
         },
       ),
-    ]).show(context);
+    ]);
   }
 
   void showMemberActionSheet() {
-    AgoraBottomSheet(items: [
-      AgoraBottomSheetItem(
+    showAgoraBottomSheet(context: context, items: [
+      AgoraBottomSheetItem.normal(
         'Copy Group ID',
-        onTap: () {},
+        onTap: () async {
+          Navigator.of(context).pop();
+        },
       ),
-    ]).show(context);
+    ]);
   }
 
   void showChangeInfo(bool isGroupName) {

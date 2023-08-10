@@ -3,25 +3,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_uikit_demo/extensions/chat_user_info_extension.dart';
 
-import '../../../demo_default.dart';
-import '../../../tools/user_info_manager.dart';
-import '../../../widgets/scroll_index_bar.dart';
+import '../demo_default.dart';
+import '../tools/user_info_manager.dart';
+import 'scroll_index_bar.dart';
 
-class ContactList extends StatefulWidget {
-  const ContactList({
+class ContactListWidget extends StatefulWidget {
+  const ContactListWidget({
     super.key,
+    required this.userIds,
+    this.onRefresh,
+    this.onLoadMore,
     this.enableSelect = false,
     this.onSelect,
     this.onUserTap,
+    this.trailing,
   });
   final bool enableSelect;
   final void Function(List<ChatUserInfo> list)? onSelect;
-  final void Function(ChatUserInfo info)? onUserTap;
+  final void Function(BuildContext context, ChatUserInfo info)? onUserTap;
+  final Future<void> Function()? onRefresh;
+  final Future<void> Function()? onLoadMore;
+  final Widget? Function(String userId)? trailing;
+
+  final List<String> userIds;
+
   @override
-  State<ContactList> createState() => _ContactListState();
+  State<ContactListWidget> createState() => _ContactListWidgetState();
 }
 
-class _ContactListState extends State<ContactList> {
+class _ContactListWidgetState extends State<ContactListWidget> {
   List<ChatUserInfo> userInfos = [];
   final double _withoutIndexHeight = 60;
   final double _includeIndexHeight = 90;
@@ -32,18 +42,24 @@ class _ContactListState extends State<ContactList> {
   @override
   void initState() {
     super.initState();
-    ChatClient.getInstance.contactManager.addEventHandler(
-        "handlerKey",
-        ContactEventHandler(
-          onContactAdded: (userId) {
-            _addContact(userId);
-          },
-          onContactDeleted: (userId) {
-            userInfos.removeWhere((element) => element.userId == userId);
-            setState(() {});
-          },
-        ));
-    _loadContacts();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        widget.onLoadMore?.call();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ContactListWidget oldWidget) {
+    _fetchInfo();
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -70,7 +86,7 @@ class _ContactListState extends State<ContactList> {
                 widget.onSelect?.call(selectList);
               });
             } else {
-              widget.onUserTap?.call(info);
+              widget.onUserTap?.call(context, info);
             }
           },
           child: ContactCell(
@@ -78,6 +94,7 @@ class _ContactListState extends State<ContactList> {
             selected: selected,
             showHeader: showHeader,
             enableSelect: widget.enableSelect,
+            trailing: widget.trailing?.call(info.userId),
           ),
         );
       },
@@ -101,39 +118,31 @@ class _ContactListState extends State<ContactList> {
       ],
     );
 
-    content = RefreshIndicator(
-      onRefresh: _loadContacts,
-      child: content,
-    );
+    if (widget.onRefresh != null) {
+      content = RefreshIndicator(
+        onRefresh: widget.onRefresh!,
+        child: content,
+      );
+    }
 
     return content;
   }
 
-  @override
-  void dispose() {
-    ChatClient.getInstance.contactManager.removeEventHandler("handlerKey");
-    super.dispose();
-  }
-
-  void _addContact(String userId) async {
-    Map<String, ChatUserInfo> infoMap = await ChatClient
-        .getInstance.userInfoManager
-        .fetchUserInfoById([userId]);
-    userInfos.add(infoMap.values.first);
-    setState(() {});
-  }
-
-  Future<void> _loadContacts() async {
+  Future<void> _fetchInfo() async {
     try {
-      List<String> list = await ChatClient.getInstance.contactManager
-          .getAllContactsFromServer();
       Map<String, ChatUserInfo> userMap =
-          await UserInfoManager.getUserInfoList(list);
+          await UserInfoManager.getUserInfoList(widget.userIds);
 
       userInfos.clear();
       userInfos.addAll(userMap.values);
       userInfos.sort((a, b) => a.showName.compareTo(b.showName));
-
+      // 得到是字母的列表。
+      List<ChatUserInfo> alphabetList =
+          userInfos.where((element) => element.isAlphabet()).toList();
+      // 得到非字母列表。
+      userInfos.removeWhere((element) => element.isAlphabet());
+      // 将字母列表插入到非字母列表中。
+      userInfos.insertAll(0, alphabetList);
       _groupOffsetMap.clear();
       var groupOffset = 0;
       for (var i = 0; i < userInfos.length; i++) {
@@ -159,11 +168,13 @@ class ContactCell extends StatelessWidget {
   final bool showHeader;
   final bool selected;
   final bool enableSelect;
+  final Widget? trailing;
   const ContactCell(
     this.contact, {
     this.selected = false,
     this.showHeader = false,
     this.enableSelect = false,
+    this.trailing,
     super.key,
   });
 
@@ -182,10 +193,17 @@ class ContactCell extends StatelessWidget {
             margin: const EdgeInsets.only(left: 10),
             child: Text(
               contact.showName,
-              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
+        trailing ?? Container(),
+        const SizedBox(width: 10),
         enableSelect
             ? Icon(
                 selected

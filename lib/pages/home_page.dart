@@ -1,9 +1,9 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_uikit_demo/tools/image_loader.dart';
-import 'package:flutter_uikit_demo/tools/tool.dart';
+import 'package:flutter_uikit_demo/tools/demo_data_store.dart';
 
-import 'ContactPage/contacts/contacts_page.dart';
+import 'ContactPage/contacts_page.dart';
 import 'ConversationPage/conversations_page.dart';
 import 'SettingsPage/settings_page.dart';
 

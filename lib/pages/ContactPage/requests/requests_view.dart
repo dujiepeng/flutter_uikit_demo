@@ -1,7 +1,7 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_uikit_demo/tools/tool.dart';
+import 'package:flutter_uikit_demo/tools/demo_data_store.dart';
 
 import '../../../tools/image_loader.dart';
 import 'request_model.dart';
@@ -25,7 +25,7 @@ class _RequestsViewState extends State<RequestsView>
   Widget build(BuildContext context) {
     super.build(context);
 
-    List<RequestModel> list = DemoDataStore.shared.requests();
+    List<RequestModel> list = DemoDataStore.shared.getRequests();
 
     return ListView.separated(
       itemBuilder: (ctx, index) {

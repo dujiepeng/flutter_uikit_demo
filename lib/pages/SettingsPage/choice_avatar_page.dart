@@ -27,10 +27,7 @@ class _ChoiceAvatarPageState extends State<ChoiceAvatarPage> {
         appBar: AppBar(
           title: const Text(
             "Profile Picture",
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
-          centerTitle: true,
-          backgroundColor: Colors.black,
           actions: [
             InkWell(
               onTap: () {
@@ -41,7 +38,10 @@ class _ChoiceAvatarPageState extends State<ChoiceAvatarPage> {
                   padding: EdgeInsets.only(right: 20),
                   child: Text(
                     "Done",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black),
                   ),
                 ),
               ),

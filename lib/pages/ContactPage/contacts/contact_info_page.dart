@@ -5,16 +5,16 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import '../../../demo_default.dart';
 import '../../../widgets/custom_button.dart';
 
-class ContactInfo extends StatefulWidget {
-  const ContactInfo(this.userInfo, {super.key});
+class ContactInfoPage extends StatefulWidget {
+  const ContactInfoPage(this.userInfo, {super.key});
 
   final ChatUserInfo userInfo;
 
   @override
-  State<ContactInfo> createState() => _ContactInfoState();
+  State<ContactInfoPage> createState() => _ContactInfoPageState();
 }
 
-class _ContactInfoState extends State<ContactInfo> {
+class _ContactInfoPageState extends State<ContactInfoPage> {
   bool _mute = false;
   ChatUserInfo? _userInfo;
 
@@ -38,13 +38,7 @@ class _ContactInfoState extends State<ContactInfo> {
             pinned: true,
             snap: true,
             centerTitle: true,
-            leading: IconButton(
-                icon: const Icon(
-                  Icons.navigate_before,
-                  color: Color.fromRGBO(51, 51, 51, 1),
-                  size: 40,
-                ),
-                onPressed: () => Navigator.of(context).pop()),
+            iconTheme: IconThemeData(color: Colors.grey[800]),
             flexibleSpace: FlexibleSpaceBar(
                 background: Center(
               child: Column(
@@ -168,20 +162,25 @@ class _ContactInfoState extends State<ContactInfo> {
   }
 
   void _loadUserInfo() async {
-    Map<String, ChatUserInfo> map = await ChatClient.getInstance.userInfoManager
-        .fetchUserInfoById([widget.userInfo.userId], expireTime: 0);
-    if (map.isNotEmpty) {
-      _userInfo = map.values.first;
-    }
-    ChatSilentModeResult result = await ChatClient.getInstance.pushManager
-        .fetchConversationSilentMode(
-            conversationId: widget.userInfo.userId,
-            type: ChatConversationType.Chat);
+    try {
+      Map<String, ChatUserInfo> map = await ChatClient
+          .getInstance.userInfoManager
+          .fetchUserInfoById([widget.userInfo.userId], expireTime: 0);
+      if (map.isNotEmpty) {
+        _userInfo = map.values.first;
+      }
+      ChatSilentModeResult result = await ChatClient.getInstance.pushManager
+          .fetchConversationSilentMode(
+              conversationId: widget.userInfo.userId,
+              type: ChatConversationType.Chat);
 
-    if (mounted) {
-      setState(() {
-        _mute = result.remindType == ChatPushRemindType.NONE;
-      });
+      if (mounted) {
+        setState(() {
+          _mute = result.remindType == ChatPushRemindType.NONE;
+        });
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 

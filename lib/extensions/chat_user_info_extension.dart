@@ -21,4 +21,8 @@ extension FirstLetter on ChatUserInfo {
       return userId;
     }
   }
+
+  bool isAlphabet() {
+    return firstLetter != '#';
+  }
 }

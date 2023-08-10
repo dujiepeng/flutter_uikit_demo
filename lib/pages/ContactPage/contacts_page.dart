@@ -5,9 +5,9 @@ import 'package:flutter_uikit_demo/pages/ContactPage/groups/groups_list_view.dar
 import 'package:flutter_uikit_demo/pages/ContactPage/requests/request_model.dart';
 import 'package:flutter_uikit_demo/pages/ContactPage/requests/requests_view.dart';
 
-import 'package:flutter_uikit_demo/tools/tool.dart';
+import 'package:flutter_uikit_demo/tools/demo_data_store.dart';
 
-import 'contacts_view.dart';
+import 'contacts/contacts_view.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key, this.onUnreadFlagChange});
@@ -65,9 +65,6 @@ class _ContactsPageState extends State<ContactsPage>
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          elevation: 0,
-          shadowColor: Colors.white,
-          backgroundColor: Colors.white,
           title: const Text('Contacts',
               style: TextStyle(
                   fontSize: 25,
@@ -147,15 +144,22 @@ class _ContactsPageState extends State<ContactsPage>
   }
 
   void _addRequest(String userId, String? reason) async {
-    Map<String, ChatUserInfo> map = await ChatClient.getInstance.userInfoManager
-        .fetchUserInfoById([userId]);
-    ChatUserInfo? info = map.values.first;
-    RequestModel model = RequestModel(
-        userId: userId,
-        showName: info.nickName,
-        avatarURL: info.avatarUrl,
-        requestMsg: reason,
-        ts: DateTime.now().millisecondsSinceEpoch);
-    DemoDataStore.shared.addRequest(model);
+    ChatUserInfo? info;
+    try {
+      Map<String, ChatUserInfo> map = await ChatClient
+          .getInstance.userInfoManager
+          .fetchUserInfoById([userId]);
+      info = map.values.first;
+    } catch (e) {
+      debugPrint('fetch user info error: $e');
+    } finally {
+      RequestModel model = RequestModel(
+          userId: userId,
+          showName: info?.nickName,
+          avatarURL: info?.avatarUrl,
+          requestMsg: reason,
+          ts: DateTime.now().millisecondsSinceEpoch);
+      DemoDataStore.shared.addRequest(model);
+    }
   }
 }

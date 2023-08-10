@@ -2,7 +2,6 @@ import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_uikit_demo/demo_default.dart';
-import 'package:flutter_uikit_demo/pages/ContactPage/contacts/contact_search_page.dart';
 
 import 'package:flutter_uikit_demo/tools/user_info_manager.dart';
 
@@ -26,12 +25,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
     super.dispose();
   }
 
-  @override
-  void didUpdateWidget(covariant ConversationsPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-  }
-
-  void unreadCountChange() {
+  void unreadCountChanged() {
     widget.onUnreadCountChanged?.call(
         AgoraChatUIKit.of(context).conversationsController.totalUnreadCount);
   }
@@ -42,8 +36,6 @@ class _ConversationsPageState extends State<ConversationsPage> {
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
-        shadowColor: Colors.white,
-        backgroundColor: Colors.white,
         title: const Text('Chats',
             style: TextStyle(
                 fontSize: 25,
@@ -73,7 +65,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
               conversation.id, () => setState(() {}));
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) {
-              return MessagePage(
+              return MessagesPage(
                 conversation: conversation,
                 userInfo: info,
               );
@@ -89,18 +81,14 @@ class _ConversationsPageState extends State<ConversationsPage> {
   }
 
   void showMenu() async {
-    await AgoraBottomSheet(titleLabel: "Create", items: [
-      AgoraBottomSheetItem(
+    showAgoraBottomSheet(context: context, items: [
+      AgoraBottomSheetItem.normal(
         "Add contact",
-        onTap: () {
+        onTap: () async {
           Navigator.of(context).pop();
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) {
-              return const ContactSearchPage();
-            },
-          ));
+          Navigator.of(context).pushNamed("/contact_search");
         },
-      ),
-    ]).show(context);
+      )
+    ]);
   }
 }

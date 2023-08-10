@@ -1,6 +1,6 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_uikit_demo/pages/ContactPage/contacts/contact_list.dart';
+import 'contact_list_view.dart';
 
 class ContactsSelectPage extends StatefulWidget {
   const ContactsSelectPage({super.key});
@@ -39,7 +39,7 @@ class _ContactsSelectPageState extends State<ContactsSelectPage> {
           )
         ],
       ),
-      body: ContactList(
+      body: ContactListView(
         enableSelect: true,
         onSelect: (list) {
           setState(() {

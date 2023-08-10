@@ -1,7 +1,7 @@
 import 'package:agora_chat_uikit/agora_chat_uikit.dart';
 import 'package:flutter/material.dart';
 
-import 'contact_list.dart';
+import 'contact_list_view.dart';
 
 class ContactsView extends StatefulWidget {
   const ContactsView({
@@ -17,8 +17,8 @@ class _ContactsViewState extends State<ContactsView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return ContactList(
-      onUserTap: (info) => _contactInfo(info),
+    return ContactListView(
+      onUserTap: (ctx, info) => _contactInfo(info),
     );
   }
 

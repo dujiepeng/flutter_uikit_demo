@@ -37,8 +37,8 @@ class _GroupsListViewState extends State<GroupsListView>
                   .then((value) => reloadGroups());
             },
             leading: Container(
-              width: 46,
-              height: 46,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(40),
                 color: Colors.grey[300],
@@ -50,7 +50,6 @@ class _GroupsListViewState extends State<GroupsListView>
             ),
             title: Text(
               groups[index].name ?? groups[index].groupId,
-              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         );
@@ -83,7 +82,9 @@ class _GroupsListViewState extends State<GroupsListView>
   void reloadGroups() async {
     try {
       groups = await ChatClient.getInstance.groupManager.getJoinedGroups();
+      groups.sort((a, b) => b.groupId.compareTo(a.groupId));
       setState(() {});
+      // ignore: empty_catches
     } on ChatError {}
   }
 

@@ -23,6 +23,12 @@ class _ContactSearchPageState extends State<ContactSearchPage> {
     _loadAddList();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _loadAddList() async {
     try {
       _addList.addAll(
@@ -37,8 +43,6 @@ class _ContactSearchPageState extends State<ContactSearchPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        shadowColor: Colors.white,
-        backgroundColor: Colors.white,
         titleSpacing: 0,
         title: SizedBox(
           height: 40,
@@ -66,6 +70,8 @@ class _ContactSearchPageState extends State<ContactSearchPage> {
                       suffixIcon: InkWell(
                         onTap: () {
                           _controller.text = "";
+                          infoList.clear();
+                          setState(() {});
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(right: 10),
@@ -91,9 +97,7 @@ class _ContactSearchPageState extends State<ContactSearchPage> {
               ),
               InkWell(
                 onTap: () {
-                  _controller.text = "";
-                  infoList.clear();
-                  setState(() {});
+                  Navigator.pop(context);
                 },
                 child: const Text(
                   "Cancel",
@@ -106,17 +110,7 @@ class _ContactSearchPageState extends State<ContactSearchPage> {
             ],
           ),
         ),
-        leading: SizedBox(
-          width: 50,
-          child: InkWell(
-            child: const Icon(
-              Icons.navigate_before,
-              color: Color.fromRGBO(51, 51, 51, 1),
-              size: 40,
-            ),
-            onTap: () => Navigator.of(context).pop(),
-          ),
-        ),
+        iconTheme: IconThemeData(color: Colors.grey[800]),
       ),
       body: infoList.isEmpty
           ? Center(

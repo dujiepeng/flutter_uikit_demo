@@ -187,7 +187,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void registerAction() {
-    debugPrint('registerAction');
     Navigator.of(context).pushNamed("register");
   }
 }

@@ -5,8 +5,8 @@ import 'package:flutter_uikit_demo/demo_default.dart';
 
 import 'show_image_page.dart';
 
-class MessagePage extends StatefulWidget {
-  const MessagePage({
+class MessagesPage extends StatefulWidget {
+  const MessagesPage({
     super.key,
     required this.conversation,
     this.userInfo,
@@ -16,10 +16,10 @@ class MessagePage extends StatefulWidget {
   final ChatUserInfo? userInfo;
 
   @override
-  State<MessagePage> createState() => _MessagePageState();
+  State<MessagesPage> createState() => _MessagesPageState();
 }
 
-class _MessagePageState extends State<MessagePage> {
+class _MessagesPageState extends State<MessagesPage> {
   final Map<String, ChatUserInfo?> _infoMap = {};
   @override
   void initState() {
@@ -33,7 +33,6 @@ class _MessagePageState extends State<MessagePage> {
 
   ChatUserInfo? _judgmentUserInfoAndUpdate(String userId) {
     if (!_infoMap.keys.contains(userId)) {
-      _infoMap[userId] = null;
       ChatClient.getInstance.userInfoManager
           .fetchUserInfoById([userId]).then((value) {
         _infoMap[userId] = value.entries.first.value;
@@ -54,24 +53,22 @@ class _MessagePageState extends State<MessagePage> {
       appBar: AppBar(
         centerTitle: false,
         titleSpacing: 0,
-        elevation: 0,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
-        shadowColor: Colors.white,
-        backgroundColor: Colors.white,
         title: Row(
           children: [
             userInfoAvatar(widget.userInfo),
             const SizedBox(width: 10),
-            Text(
-              showName,
-              style: const TextStyle(
-                color: Color.fromRGBO(51, 51, 51, 1),
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
+            Expanded(
+              child: Text(
+                showName,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color.fromRGBO(51, 51, 51, 1),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
               ),
             ),
+            const SizedBox(width: 30)
           ],
         ),
       ),

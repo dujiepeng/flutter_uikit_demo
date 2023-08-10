@@ -27,12 +27,19 @@ class UserInfoManager {
 
   Future<Map<String, ChatUserInfo>> fetchUserInfo(
       List<String> userIds, VoidCallback? finish) async {
-    Map<String, ChatUserInfo> map =
-        await ChatClient.getInstance.userInfoManager.fetchUserInfoById(
-      userIds,
-      expireTime: 3600,
-    );
-    _infoMap.addAll(map);
+    Map<String, ChatUserInfo> map = {};
+    try {
+      map = await ChatClient.getInstance.userInfoManager.fetchUserInfoById(
+        userIds,
+        expireTime: 3600,
+      );
+
+      _infoMap.addAll(map);
+    } on ChatError catch (e) {
+      debugPrint(e.description);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
     finish?.call();
     return map;
   }
